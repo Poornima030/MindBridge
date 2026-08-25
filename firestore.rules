@@ -1,0 +1,42 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // Mood entries
+    match /mood_entries/{entryId} {
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow read, update, delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+    }
+
+    // Journal entries
+    match /journal_entries/{journalId} {
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow read, update, delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+    }
+
+    // Sentiment analysis entries
+    match /sentiment_analysis/{analysisId} {
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow read, update, delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+    }
+
+    // Chat history
+    match /chat_history/{chatId} {
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+      allow read, update, delete: if isAuthenticated() && resource.data.user_id == request.auth.uid;
+    }
+  }
+}

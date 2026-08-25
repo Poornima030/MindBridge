@@ -89,19 +89,24 @@ export const MoodPage: React.FC = () => {
 
   // Quick stats
   const totalLogs = moods.length;
-  const moodCounts = moods.reduce((acc, curr) => {
-    acc[curr.mood] = (acc[curr.mood] || 0) + 1;
+  const moodCounts = (moods || []).reduce((acc, curr) => {
+    if (curr && curr.mood) {
+      acc[curr.mood] = (acc[curr.mood] || 0) + 1;
+    }
+    return acc;
   }, {} as Record<string, number>);
 
   let topMood = 'None';
   let topCount = 0;
-  Object.entries(moodCounts).forEach(([m, count]) => {
-    const numCount = Number(count);
-    if (numCount > topCount) {
-      topCount = numCount;
-      topMood = m;
-    }
-  });
+  if (moodCounts) {
+    Object.entries(moodCounts).forEach(([m, count]) => {
+      const numCount = Number(count);
+      if (numCount > topCount) {
+        topCount = numCount;
+        topMood = m;
+      }
+    });
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in duration-200">

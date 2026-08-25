@@ -25,11 +25,13 @@ function MainAppContent() {
   const [isCrisisModalOpen, setIsCrisisModalOpen] = useState<boolean>(false);
   const [isBreathingModalOpen, setIsBreathingModalOpen] = useState<boolean>(false);
   const [breathingInitialType, setBreathingInitialType] = useState<
-    'breathing-box' | 'breathing-478' | undefined
+    'breathing-box' | 'breathing-478' | 'breathing-55' | 'breathing-belly' | undefined
   >(undefined);
   const [isGroundingModalOpen, setIsGroundingModalOpen] = useState<boolean>(false);
 
-  const handleOpenBreathingModal = (type?: 'breathing-box' | 'breathing-478') => {
+  const handleOpenBreathingModal = (
+    type?: 'breathing-box' | 'breathing-478' | 'breathing-55' | 'breathing-belly'
+  ) => {
     setBreathingInitialType(type);
     setIsBreathingModalOpen(true);
   };

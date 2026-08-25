@@ -212,7 +212,16 @@ export interface WellnessRecommendation {
   category: 'Breathing' | 'Mindfulness' | 'Movement' | 'Journaling' | 'Connection' | 'Rest';
   durationMinutes: number;
   description: string;
-  actionType?: 'breathing-box' | 'breathing-478' | 'grounding-54321' | 'journal' | 'walk' | 'chat';
+  actionType?:
+    | 'breathing-box'
+    | 'breathing-478'
+    | 'breathing-55'
+    | 'breathing-belly'
+    | 'grounding-54321'
+    | 'journal'
+    | 'walk'
+    | 'chat'
+    | 'guided-session';
   guidanceSteps: string[];
   tag: string;
 }

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { X, Play, Pause, RotateCcw, Wind } from 'lucide-react';
 
-interface BreathingModalProps {
+export interface BreathingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialType?: 'breathing-box' | 'breathing-478';
+  initialType?: 'breathing-box' | 'breathing-478' | 'breathing-55' | 'breathing-belly';
 }
 
-type Technique = 'box' | '478';
+type Technique = 'box' | '478' | '55' | 'belly';
 
 interface PhaseConfig {
   name: 'Inhale' | 'Hold' | 'Exhale' | 'Rest';
@@ -35,6 +35,23 @@ const TECHNIQUES: Record<Technique, { name: string; description: string; phases:
       { name: 'Exhale', duration: 8, instruction: 'Exhale completely with a soft, gentle whoosh...' },
     ],
   },
+  '55': {
+    name: '5-5 Coherent Breathing',
+    description: 'Harmonize your heart rate variability (HRV) and cultivate deep inner balance.',
+    phases: [
+      { name: 'Inhale', duration: 5, instruction: 'Inhale smoothly and deeply for 5 seconds...' },
+      { name: 'Exhale', duration: 5, instruction: 'Exhale gently and steadily for 5 seconds...' },
+    ],
+  },
+  belly: {
+    name: 'Diaphragmatic Belly Breath',
+    description: 'Expand your diaphragm to signal instant safety to your nervous system.',
+    phases: [
+      { name: 'Inhale', duration: 4, instruction: 'Breathe deep into your belly, feeling it rise...' },
+      { name: 'Hold', duration: 2, instruction: 'Gentle pause, feeling full of gentle warmth...' },
+      { name: 'Exhale', duration: 6, instruction: 'Slowly let your belly fall, releasing all tension...' },
+    ],
+  },
 };
 
 export const BreathingExerciseModal: React.FC<BreathingModalProps> = ({
@@ -42,25 +59,30 @@ export const BreathingExerciseModal: React.FC<BreathingModalProps> = ({
   onClose,
   initialType,
 }) => {
-  const [technique, setTechnique] = useState<Technique>(
-    initialType === 'breathing-478' ? '478' : 'box'
-  );
+  const getInitialTech = (): Technique => {
+    if (initialType === 'breathing-478') return '478';
+    if (initialType === 'breathing-55') return '55';
+    if (initialType === 'breathing-belly') return 'belly';
+    return 'box';
+  };
+
+  const [technique, setTechnique] = useState<Technique>(getInitialTech());
   const [isRunning, setIsRunning] = useState<boolean>(false);
   const [currentPhaseIndex, setCurrentPhaseIndex] = useState<number>(0);
   const [secondsLeft, setSecondsLeft] = useState<number>(4);
   const [completedCycles, setCompletedCycles] = useState<number>(0);
 
-  const activeTechnique = TECHNIQUES[technique];
-  const activePhase = activeTechnique.phases[currentPhaseIndex];
+  const activeTechnique = TECHNIQUES[technique] || TECHNIQUES.box;
+  const activePhase = activeTechnique.phases[currentPhaseIndex] || activeTechnique.phases[0];
 
   // Reset when opening or changing technique
   useEffect(() => {
     if (isOpen) {
-      if (initialType === 'breathing-478') setTechnique('478');
-      else if (initialType === 'breathing-box') setTechnique('box');
+      const selected = getInitialTech();
+      setTechnique(selected);
       setIsRunning(true);
       setCurrentPhaseIndex(0);
-      setSecondsLeft(TECHNIQUES[technique].phases[0].duration);
+      setSecondsLeft(TECHNIQUES[selected].phases[0].duration);
       setCompletedCycles(0);
     } else {
       setIsRunning(false);
@@ -125,7 +147,7 @@ export const BreathingExerciseModal: React.FC<BreathingModalProps> = ({
     >
       <div
         id="breathing-modal-container"
-        className="bg-white rounded-3xl max-w-md w-full border border-slate-200 shadow-2xl p-6 sm:p-8 relative overflow-hidden flex flex-col items-center text-center"
+        className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl p-6 sm:p-8 relative overflow-hidden flex flex-col items-center text-center"
       >
         <button
           id="breathing-modal-close-btn"
@@ -141,28 +163,50 @@ export const BreathingExerciseModal: React.FC<BreathingModalProps> = ({
           <span className="text-xs font-bold uppercase tracking-wider">Mindful Breathwork</span>
         </div>
 
-        <div className="flex bg-slate-100 p-1.5 rounded-2xl mb-4 text-xs font-bold border border-slate-200">
+        <div className="flex flex-wrap justify-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl mb-4 text-xs font-bold border border-slate-200">
           <button
             id="tab-box-breathing"
             onClick={() => handleTechniqueChange('box')}
-            className={`px-3.5 py-1.5 rounded-xl transition-all ${
+            className={`px-3 py-1.5 rounded-xl transition-all ${
               technique === 'box'
                 ? 'bg-teal-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            4x4 Box Breath
+            4x4 Box
           </button>
           <button
             id="tab-478-breathing"
             onClick={() => handleTechniqueChange('478')}
-            className={`px-3.5 py-1.5 rounded-xl transition-all ${
+            className={`px-3 py-1.5 rounded-xl transition-all ${
               technique === '478'
                 ? 'bg-teal-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            4-7-8 Relaxation
+            4-7-8 Relax
+          </button>
+          <button
+            id="tab-55-breathing"
+            onClick={() => handleTechniqueChange('55')}
+            className={`px-3 py-1.5 rounded-xl transition-all ${
+              technique === '55'
+                ? 'bg-teal-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            5-5 Coherent
+          </button>
+          <button
+            id="tab-belly-breathing"
+            onClick={() => handleTechniqueChange('belly')}
+            className={`px-3 py-1.5 rounded-xl transition-all ${
+              technique === 'belly'
+                ? 'bg-teal-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            Belly Breath
           </button>
         </div>
 

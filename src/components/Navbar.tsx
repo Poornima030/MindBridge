@@ -55,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 transition-colors">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo */}
@@ -64,21 +64,22 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => handleNavClick('dashboard')}
             className="flex items-center gap-2.5 cursor-pointer select-none group"
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-600/20 group-hover:scale-105 transition-transform">
-              <Heart className="w-5 h-5 fill-white/20" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-teal-600/20 group-hover:scale-105 transition-transform">
+              <Heart className="w-5 h-5 fill-white/30" />
             </div>
             <div>
-              <span className="text-lg font-extrabold bg-gradient-to-r from-emerald-800 to-teal-700 dark:from-emerald-300 dark:to-teal-200 bg-clip-text text-transparent tracking-tight">
+              <span className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-1.5">
                 MindBridge
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
               </span>
-              <span className="block text-[9px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-wider -mt-1">
-                AI Wellness Bento
+              <span className="block text-[9px] uppercase font-bold text-teal-600 tracking-wider -mt-1">
+                AI Wellness Sanctuary
               </span>
             </div>
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1 bg-[#F8FAF9] dark:bg-slate-800/60 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
+          <nav className="hidden lg:flex items-center gap-1 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/70">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -87,85 +88,73 @@ export const Navbar: React.FC<NavbarProps> = ({
                   key={item.id}
                   id={`nav-link-${item.id}`}
                   onClick={() => handleNavClick(item.id)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     isActive
-                      ? 'bg-white dark:bg-slate-700 text-emerald-800 dark:text-emerald-300 shadow-xs'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                      ? 'bg-teal-600 text-white shadow-sm shadow-teal-600/20'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-white' : 'text-teal-600'}`} />
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </nav>
 
-          {/* Quick Actions & User Menu */}
+          {/* Quick Header Actions */}
           <div className="hidden sm:flex items-center gap-2.5">
+            {/* Quick Calm Button */}
             <button
-              id="quick-breathe-btn"
+              id="quick-breathwork-btn"
               onClick={onOpenBreathingModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-teal-50 dark:bg-teal-950/50 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-300 rounded-xl border border-teal-200/60 dark:border-teal-800/50 transition-colors"
-              title="Quick Mindful Breathing"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 text-emerald-700 border border-emerald-200/80 text-xs font-bold transition-all shadow-xs active:scale-95"
+              title="Quick Box Breathing Exercise"
             >
-              <Wind className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-              <span>Breathe</span>
+              <Wind className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Quick Calm</span>
             </button>
 
+            {/* Helpline quick modal launcher */}
             <button
-              id="quick-crisis-btn"
+              id="nav-crisis-btn"
               onClick={onOpenCrisisModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 rounded-xl border border-rose-200/60 dark:border-rose-800/50 transition-colors"
-              title="Helpline & Crisis Support"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100/80 text-rose-600 border border-rose-200/80 text-xs font-bold transition-all shadow-xs active:scale-95"
+              title="24/7 Helpline Directory"
             >
-              <PhoneCall className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-              <span>988 Help</span>
+              <PhoneCall className="w-3.5 h-3.5 text-rose-600" />
+              <span>Get Help</span>
             </button>
 
-            <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
-
-            <div className="flex items-center gap-2">
+            {/* Profile Avatar & Logout */}
+            <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
               <button
-                id="user-profile-shortcut"
+                id="user-profile-btn"
                 onClick={() => handleNavClick('profile')}
-                className="flex items-center gap-2 p-1.5 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left border border-transparent hover:border-slate-200/60"
+                className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-sky-600 text-white flex items-center justify-center text-xs font-extrabold shadow-xs hover:ring-2 hover:ring-teal-400 transition-all"
+                title="Your Profile"
               >
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-extrabold text-xs">
-                  {userProfile?.name?.charAt(0).toUpperCase() ||
-                    currentUser?.email?.charAt(0).toUpperCase() ||
-                    'M'}
-                </div>
-                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 max-w-[90px] truncate hidden md:inline">
-                  {userProfile?.name || 'Friend'}
-                </span>
+                {userProfile?.name?.charAt(0).toUpperCase() ||
+                  currentUser?.email?.charAt(0).toUpperCase() ||
+                  'U'}
               </button>
-
               <button
-                id="logout-btn"
+                id="user-logout-btn"
                 onClick={handleLogout}
-                className="p-2 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
-                title="Log out"
-                aria-label="Log out"
+                className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition-colors"
+                title="Sign out"
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile Menu Toggle */}
           <div className="flex items-center gap-2 lg:hidden">
-            <button
-              id="mobile-quick-crisis-btn"
-              onClick={onOpenCrisisModal}
-              className="p-2 bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 rounded-xl border border-rose-200/60 text-xs font-semibold"
-            >
-              <PhoneCall className="w-4 h-4" />
-            </button>
             <button
               id="mobile-menu-toggle-btn"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-              aria-label="Toggle navigation menu"
+              className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+              aria-label="Toggle menu"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -173,61 +162,66 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Drawer Menu */}
       {isMobileMenuOpen && (
         <div
-          id="mobile-nav-menu"
-          className="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pt-3 pb-6 space-y-1 shadow-xl animate-in slide-in-from-top duration-150"
+          id="mobile-drawer-menu"
+          className="lg:hidden border-t border-slate-200 bg-white/95 px-4 pt-3 pb-6 space-y-2 animate-in slide-in-from-top-2 duration-200 shadow-xl"
         >
-          <div className="px-3 py-2 mb-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200 flex items-center justify-center font-bold text-xs">
-                {userProfile?.name?.charAt(0).toUpperCase() || 'M'}
-              </div>
-              <div className="text-xs font-medium text-slate-800 dark:text-slate-200">
-                {userProfile?.name || 'Friend'}
-              </div>
-            </div>
-            <button
-              onClick={onOpenBreathingModal}
-              className="flex items-center gap-1 text-xs px-2.5 py-1 bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 rounded-lg"
-            >
-              <Wind className="w-3 h-3" /> Breathe
-            </button>
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  id={`mobile-nav-${item.id}`}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-bold transition-all ${
+                    isActive
+                      ? 'bg-teal-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-teal-600'}`} />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                id={`mobile-nav-${item.id}`}
-                onClick={() => handleNavClick(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-semibold'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                }`}
-              >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
-                <span>{item.label}</span>
-              </button>
-            );
-          })}
-
-          <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
             <button
-              onClick={onOpenCrisisModal}
-              className="flex items-center gap-2 text-xs font-semibold text-rose-600 dark:text-rose-400 p-2"
+              id="mobile-quick-breath-btn"
+              onClick={() => {
+                onOpenBreathingModal();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold"
             >
-              <PhoneCall className="w-4 h-4" /> 24/7 Crisis Support
+              <Wind className="w-4 h-4 text-emerald-600" />
+              <span>Take a 1-Min Mindful Breath</span>
             </button>
+
             <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-rose-600 p-2 font-medium"
+              id="mobile-crisis-btn"
+              onClick={() => {
+                onOpenCrisisModal();
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 text-xs font-bold"
             >
-              <LogOut className="w-4 h-4" /> Sign Out
+              <PhoneCall className="w-4 h-4" />
+              <span>Immediate Crisis Helplines (24/7)</span>
+            </button>
+
+            <button
+              id="mobile-logout-btn"
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-slate-500 hover:text-rose-600 text-xs font-semibold"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
             </button>
           </div>
         </div>

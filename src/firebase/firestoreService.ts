@@ -81,12 +81,28 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
         name: data.name || 'Friend',
         email: data.email || '',
         created_at: data.created_at || new Date().toISOString(),
+        persona_settings: data.persona_settings,
       };
     }
     return null;
   } catch (error) {
     handleFirestoreError(error, 'getUserProfile');
     return null;
+  }
+}
+
+export async function updateUserPersona(
+  userId: string,
+  persona: import('../types.ts').BotPersonaConfig
+): Promise<void> {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await setDoc(userRef, cleanForFirestore({
+      persona_settings: persona,
+      updated_at: serverTimestamp(),
+    }), { merge: true });
+  } catch (error) {
+    handleFirestoreError(error, 'updateUserPersona');
   }
 }
 
@@ -157,7 +173,13 @@ export async function deleteMoodEntry(docId: string): Promise<void> {
 // Journal Entries
 export async function addJournalEntry(
   userId: string,
-  content: string
+  content: string,
+  extra?: {
+    entry_type?: 'text' | 'voice' | 'hybrid';
+    audio_url?: string;
+    audio_duration?: number;
+    audio_analysis?: import('../types.ts').JournalAudioAnalysis;
+  }
 ): Promise<JournalEntry> {
   const journalId = `journal_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const now = new Date().toISOString();
@@ -168,6 +190,10 @@ export async function addJournalEntry(
     user_id: userId,
     content: (content || '').trim(),
     created_at: now,
+    entry_type: extra?.entry_type || 'text',
+    audio_url: extra?.audio_url || undefined,
+    audio_duration: extra?.audio_duration || undefined,
+    audio_analysis: extra?.audio_analysis || undefined,
   };
 
   try {
@@ -199,6 +225,10 @@ export async function getJournalEntries(userId: string): Promise<JournalEntry[]>
         user_id: data.user_id,
         content: data.content,
         created_at: data.created_at || new Date().toISOString(),
+        entry_type: data.entry_type || 'text',
+        audio_url: data.audio_url,
+        audio_duration: data.audio_duration,
+        audio_analysis: data.audio_analysis,
       });
     });
 

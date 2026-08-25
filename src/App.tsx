@@ -36,11 +36,11 @@ function MainAppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg mb-4 animate-bounce">
           <Heart className="w-7 h-7 fill-white/30" />
         </div>
-        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+        <p className="text-sm font-semibold text-slate-700 flex items-center gap-2">
           <RefreshCw className="w-4 h-4 animate-spin text-emerald-600" />
           <span>Opening MindBridge safe space...</span>
         </p>
@@ -50,7 +50,7 @@ function MainAppContent() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white">
+      <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-white">
         <DisclaimerBanner onOpenCrisisModal={() => setIsCrisisModalOpen(true)} />
         <main className="flex-1">
           <AuthPage />
@@ -64,7 +64,7 @@ function MainAppContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white transition-colors">
+    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-white">
       {/* Top Professional Disclaimer */}
       <DisclaimerBanner onOpenCrisisModal={() => setIsCrisisModalOpen(true)} />
       {/* Firestore Permissions Notification (if rules locked) */}

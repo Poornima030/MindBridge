@@ -1,5 +1,6 @@
 import { analyzeCrisisIndicators } from './crisisService.ts';
 import { getAI, generateContentWithFallback } from './geminiClient.ts';
+import { generateGroqChatCompletion } from './groqClient.ts';
 
 export interface SentimentAnalysisResult {
   sentiment: 'Positive' | 'Neutral' | 'Negative';
@@ -11,16 +12,9 @@ export interface SentimentAnalysisResult {
 
 export async function analyzeJournalSentiment(content: string): Promise<SentimentAnalysisResult> {
   const crisis = analyzeCrisisIndicators(content);
-
   const fallbackResult = fallbackSentimentAnalysis(content, crisis.isCrisisDetected);
 
-  const ai = getAI();
-  if (!ai) {
-    return fallbackResult;
-  }
-
-  try {
-    const prompt = `You are a certified psychological sentiment and emotional tone evaluator for a mental wellness journal.
+  const prompt = `You are a certified psychological sentiment and emotional tone evaluator for a mental wellness journal.
 Analyze the following journal entry text and provide a structured emotional evaluation.
 
 CRITICAL GUIDELINES:
@@ -41,41 +35,77 @@ Return STRICT JSON matching this schema:
 Journal Entry to analyze:
 "${content.replace(/"/g, '\\"')}"`;
 
-    const response = await generateContentWithFallback({
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-      },
+  // 1. Try Groq first for ultra-fast JSON analysis
+  try {
+    const groqResponse = await generateGroqChatCompletion({
+      messages: [
+        { role: 'system', content: 'You are an emotional sentiment evaluator. Always respond in valid JSON matching the requested schema.' },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
     });
 
-    const responseText = response.text?.trim();
-    if (!responseText) {
-      return fallbackResult;
+    if (groqResponse) {
+      const parsed = JSON.parse(groqResponse);
+      const validSentiment = ['Positive', 'Neutral', 'Negative'].includes(parsed.sentiment)
+        ? parsed.sentiment
+        : fallbackResult.sentiment;
+
+      const rawScore = typeof parsed.sentimentScore === 'number' ? parsed.sentimentScore : fallbackResult.sentimentScore;
+      const clampedScore = Math.max(-1.0, Math.min(1.0, Number(rawScore.toFixed(2))));
+
+      return {
+        sentiment: validSentiment,
+        sentimentScore: clampedScore,
+        emotionalInsight: parsed.emotionalInsight || fallbackResult.emotionalInsight,
+        detectedEmotions: Array.isArray(parsed.detectedEmotions) && parsed.detectedEmotions.length > 0
+          ? parsed.detectedEmotions.slice(0, 5)
+          : fallbackResult.detectedEmotions,
+        crisisDetected: crisis.isCrisisDetected,
+      };
     }
-
-    const parsed = JSON.parse(responseText);
-    const validSentiment = ['Positive', 'Neutral', 'Negative'].includes(parsed.sentiment)
-      ? parsed.sentiment
-      : fallbackResult.sentiment;
-
-    const rawScore = typeof parsed.sentimentScore === 'number' ? parsed.sentimentScore : fallbackResult.sentimentScore;
-    const clampedScore = Math.max(-1.0, Math.min(1.0, Number(rawScore.toFixed(2))));
-
-    return {
-      sentiment: validSentiment,
-      sentimentScore: clampedScore,
-      emotionalInsight:
-        parsed.emotionalInsight ||
-        fallbackResult.emotionalInsight,
-      detectedEmotions: Array.isArray(parsed.detectedEmotions) && parsed.detectedEmotions.length > 0
-        ? parsed.detectedEmotions.slice(0, 5)
-        : fallbackResult.detectedEmotions,
-      crisisDetected: crisis.isCrisisDetected,
-    };
-  } catch (error) {
-    console.error('Sentiment analysis error, utilizing fallback rule engine:', error);
-    return fallbackResult;
+  } catch (groqErr) {
+    console.warn('Groq sentiment evaluation failed, falling back to Gemini:', groqErr);
   }
+
+  // 2. Fallback to Gemini
+  const ai = getAI();
+  if (ai) {
+    try {
+      const response = await generateContentWithFallback({
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const responseText = response.text?.trim();
+      if (responseText) {
+        const parsed = JSON.parse(responseText);
+        const validSentiment = ['Positive', 'Neutral', 'Negative'].includes(parsed.sentiment)
+          ? parsed.sentiment
+          : fallbackResult.sentiment;
+
+        const rawScore = typeof parsed.sentimentScore === 'number' ? parsed.sentimentScore : fallbackResult.sentimentScore;
+        const clampedScore = Math.max(-1.0, Math.min(1.0, Number(rawScore.toFixed(2))));
+
+        return {
+          sentiment: validSentiment,
+          sentimentScore: clampedScore,
+          emotionalInsight: parsed.emotionalInsight || fallbackResult.emotionalInsight,
+          detectedEmotions: Array.isArray(parsed.detectedEmotions) && parsed.detectedEmotions.length > 0
+            ? parsed.detectedEmotions.slice(0, 5)
+            : fallbackResult.detectedEmotions,
+          crisisDetected: crisis.isCrisisDetected,
+        };
+      }
+    } catch (error) {
+      console.error('Gemini sentiment analysis error, utilizing rule engine fallback:', error);
+    }
+  }
+
+  return fallbackResult;
 }
 
 // Rule-based heuristic fallback if AI key is unavailable or service times out

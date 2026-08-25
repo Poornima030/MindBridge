@@ -1,9 +1,11 @@
-import { WellnessRecommendation, CrisisResource } from '../types.ts';
+import { WellnessRecommendation, CrisisResource, BotPersonaConfig, UserEmotionalContext } from '../types.ts';
 
 export interface ChatApiPayload {
   message: string;
   history?: Array<{ role: 'user' | 'model'; text: string }>;
   userName?: string;
+  persona?: BotPersonaConfig;
+  userContext?: UserEmotionalContext;
 }
 
 export interface ChatApiResponse {
@@ -49,6 +51,34 @@ export async function analyzeJournalText(content: string): Promise<SentimentApiR
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: 'Sentiment analysis failed' }));
     throw new Error(err.error || 'Failed to analyze journal sentiment');
+  }
+
+  return response.json();
+}
+
+export interface VoiceUnderstandingResponse {
+  transcriptSummary: string;
+  emotionalTone: string;
+  detectedThemes: string[];
+  comfortNote: string;
+  crisisDetected: boolean;
+}
+
+export async function understandVoiceAudio(payload: {
+  audioBase64?: string;
+  mimeType?: string;
+  durationSeconds?: number;
+  spokenContextHint?: string;
+}): Promise<VoiceUnderstandingResponse> {
+  const response = await fetch('/api/voice-understand', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Voice understanding failed' }));
+    throw new Error(err.error || 'Failed to analyze voice recording');
   }
 
   return response.json();

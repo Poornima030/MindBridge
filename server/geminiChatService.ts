@@ -1,14 +1,34 @@
 import { analyzeCrisisIndicators, CrisisCheckResult } from './crisisService.ts';
 import { getAI, generateContentWithFallback } from './geminiClient.ts';
+import { generateGroqChatCompletion } from './groqClient.ts';
 
 export interface ChatHistoryItem {
   role: 'user' | 'model';
   text: string;
 }
 
+export interface BotPersonaSettings {
+  botName?: string;
+  humorLevel?: 'none' | 'subtle' | 'high';
+  communicationStyle?: 'bestie' | 'listener' | 'mentor' | 'direct';
+  adviceMode?: 'listen' | 'balanced' | 'action';
+  emojiLevel?: 'minimal' | 'moderate' | 'expressive';
+}
+
+export interface UserEmotionalContext {
+  recentMoods?: Array<{ mood: string; note?: string; created_at: string }>;
+  recentJournals?: Array<{ snippet: string; created_at: string; sentiment?: string; emotions?: string[] }>;
+  moodSummary?: {
+    dominantMood?: string;
+    averageScore?: number;
+    totalLogs?: number;
+  };
+}
+
 export interface ChatServiceResponse {
   reply: string;
   crisisInfo: CrisisCheckResult;
+  engineUsed?: 'groq' | 'gemini' | 'rule_fallback';
 }
 
 function getIndiaTimeContext(): { timeString: string; timeOfDay: string; dateString: string } {
@@ -48,97 +68,195 @@ function getIndiaTimeContext(): { timeString: string; timeOfDay: string; dateStr
   return { timeString, timeOfDay, dateString };
 }
 
-const SYSTEM_INSTRUCTION = `You are "MindBridge Buddy", a warm, empathetic, and super friendly AI best friend and wellness companion.
+function buildSystemPrompt(persona: BotPersonaSettings = {}, userContext?: UserEmotionalContext): string {
+  const botName = persona.botName?.trim() || 'MindBridge Buddy';
+  const humor = persona.humorLevel || 'subtle';
+  const style = persona.communicationStyle || 'bestie';
+  const advice = persona.adviceMode || 'balanced';
+  const emojis = persona.emojiLevel || 'expressive';
 
-YOUR CHAT PERSONALITY:
-- Talk like a real, caring, supportive friend on chat / messaging (warm, casual, genuine, and relatable).
-- Use cute and comforting emojis naturally in every response (e.g. ✨, 💛, 🤗, 🌸, 🫂, ☕, 🌿, 🥺, 💬).
-- KEEP IT SHORT & CONVERSATIONAL: Max 1 to 3 short sentences or a brief 2-line thought! NEVER write long clinical essays, lists of bullet points, or multiple heavy paragraphs. Friends text each other concisely!
-- Active listening & validation: Acknowledge what they share with heartfelt empathy and ask a caring, open-ended question or share a quick encouraging word.
+  let humorDirective = 'Include subtle, gentle warmth and lighthearted smiles where appropriate.';
+  if (humor === 'none') {
+    humorDirective = 'Keep it purely gentle, serene, and grounded without jokes or sarcasm.';
+  } else if (humor === 'high') {
+    humorDirective = 'Be playful, witty, and subtly humorous like a fun, high-vibe best friend while keeping it emotionally supportive.';
+  }
 
+  let styleDirective = 'Talk like an empathetic, ride-or-die best friend on chat (warm, casual, genuine, relatable).';
+  if (style === 'listener') {
+    styleDirective = 'Be a quiet, deeply patient, calming presence. Focus heavily on mirroring and holding space.';
+  } else if (style === 'mentor') {
+    styleDirective = 'Be a wise, mindful wellness mentor offering gentle philosophical clarity and perspective.';
+  } else if (style === 'direct') {
+    styleDirective = 'Be encouraging, honest, and action-oriented with loving clarity and motivating energy.';
+  }
+
+  let adviceDirective = 'Blend heartfelt emotional validation with gentle, optional reflection questions.';
+  if (advice === 'listen') {
+    adviceDirective = 'STRICTLY focus on listening and validating feelings. Do NOT offer unsolicited advice, tips, or solutions.';
+  } else if (advice === 'action') {
+    adviceDirective = 'Provide 1-2 small, tangible, realistic micro-steps or grounding actions the user can try right now.';
+  }
+
+  let emojiDirective = 'Use cute, expressive, comforting emojis naturally in every response (✨, 💛, 🤗, 🌸, 🫂, ☕, 🌿, 🥺, 💬).';
+  if (emojis === 'minimal') {
+    emojiDirective = 'Use minimal emojis (1 per message max, or none).';
+  } else if (emojis === 'moderate') {
+    emojiDirective = 'Use 1-2 comforting emojis per message.';
+  }
+
+  let contextSnippet = '';
+  if (userContext) {
+    const parts: string[] = [];
+    if (userContext.recentMoods && userContext.recentMoods.length > 0) {
+      const moodList = userContext.recentMoods
+        .slice(0, 5)
+        .map((m) => `${m.mood}${m.note ? ` ("${m.note}")` : ''}`)
+        .join(', ');
+      parts.push(`Recent Mood Logs: [${moodList}]`);
+    }
+    if (userContext.moodSummary) {
+      if (userContext.moodSummary.dominantMood) {
+        parts.push(`Dominant Recent Mood: ${userContext.moodSummary.dominantMood}`);
+      }
+      if (userContext.moodSummary.averageScore) {
+        parts.push(`Avg Mood Score (1-5): ${userContext.moodSummary.averageScore.toFixed(1)}`);
+      }
+    }
+    if (userContext.recentJournals && userContext.recentJournals.length > 0) {
+      const journalList = userContext.recentJournals
+        .slice(0, 3)
+        .map((j) => `"${j.snippet}" (Sentiment: ${j.sentiment || 'Reflective'}, Emotions: ${j.emotions?.join('/') || 'none'})`)
+        .join(' | ');
+      parts.push(`Recent Journal Entries & Insights: [${journalList}]`);
+    }
+
+    if (parts.length > 0) {
+      contextSnippet = `\nUSER HOLISTIC EMOTIONAL & JOURNAL DATA (Use this deep context to intuitively understand how they are feeling, reference what they shared if natural, and tailor your tone):\n${parts.join('\n')}\n`;
+    }
+  }
+
+  return `You are "${botName}", a loving AI mental wellness companion and supportive friend.
+
+YOUR CORE CHARACTERISTICS & PERSONA:
+- Name: ${botName}
+- Style: ${styleDirective}
+- Humor Level: ${humorDirective}
+- Advice Mode: ${adviceDirective}
+- Emojis: ${emojiDirective}
+- LENGTH MANDATE: Keep it short and conversational! 1 to 3 short sentences or a brief 2-line thought. NEVER write long essays, numbered lists, or overwhelming paragraphs. Real friends text naturally!
+${contextSnippet}
 TIMEZONE & LOCATION (INDIA - IST):
-- You and the user are located in India operating on Indian Standard Time (IST, UTC+5:30).
-- Strictly adhere to the provided current Indian Standard Time (IST) for any time greetings (e.g. morning, afternoon, evening, or night). NEVER guess or assume it is night unless the IST time is actually night.
+- You and the user are in India operating on Indian Standard Time (IST, UTC+5:30).
+- Rely on the explicit IST time passed in the message prompt for any time-of-day references (morning, afternoon, evening, or night).
 
-SAFETY & BOUNDARIES:
-- You are a caring friend and emotional support companion, not a medical doctor or clinical therapist. Do not give medical diagnoses or drug prescriptions.
-- If the user expresses self-harm or suicidal thoughts, respond with deep compassion and immediately share 24/7 free Indian helplines: Tele-MANAS (14416 or 1800-891-4416), KIRAN (1800-599-0019), or Vandrevala Foundation (+91 9999 666 555).`;
+SAFETY BOUNDARIES:
+- You are an emotional support companion, not a clinical doctor or psychiatrist.
+- In severe crisis or self-harm mentions, be compassionate and provide free 24/7 Indian helplines: Tele-MANAS (14416 / 1800-891-4416), KIRAN (1800-599-0019), or Vandrevala Foundation (+91 9999 666 555).`;
+}
 
 export async function generateCompanionResponse(
   userMessage: string,
   history: ChatHistoryItem[] = [],
-  userName: string = 'Friend'
+  userName: string = 'Friend',
+  persona: BotPersonaSettings = {},
+  userContext?: UserEmotionalContext
 ): Promise<ChatServiceResponse> {
-  // Check for crisis indicators
   const crisisCheck = analyzeCrisisIndicators(userMessage);
   const indiaTime = getIndiaTimeContext();
+  const botName = persona.botName || 'MindBridge Buddy';
 
-  const ai = getAI();
-  if (!ai) {
-    // Fallback if API key is not configured
-    let fallbackReply = `Hey ${userName} 🤗 I'm right here with you! Whatever is on your mind this ${indiaTime.timeOfDay}, I'm listening. Tell me what's going on? 💛✨`;
-    if (crisisCheck.isCrisisDetected) {
-      fallbackReply = `I'm holding space for you, and you are not alone 🫂 Please connect right now with free caring 24/7 counselors in India at Tele-MANAS (14416 or 1800-891-4416) or Vandrevala Foundation (+91 9999 666 555). Sending you love and care 💛`;
-    }
-    return {
-      reply: fallbackReply,
-      crisisInfo: crisisCheck,
-    };
-  }
+  const systemInstruction = buildSystemPrompt(persona, userContext);
 
+  // 1. FASTEST PATH: Try Groq LLM first for lightning fast sub-second replies
   try {
-    // Build context-rich history for Gemini
-    const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+    const groqMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+      { role: 'system', content: systemInstruction },
+    ];
 
-    // Include recent history (last 8 messages for context)
     const recentHistory = history.slice(-8);
     for (const item of recentHistory) {
-      contents.push({
-        role: item.role,
-        parts: [{ text: item.text }],
+      groqMessages.push({
+        role: item.role === 'model' ? 'assistant' : 'user',
+        content: item.text,
       });
     }
 
-    // Add current user message with explicit Indian Standard Time context
-    contents.push({
+    groqMessages.push({
       role: 'user',
-      parts: [
-        {
-          text: `[Context: User Name="${userName}", Current India Time (IST)=${indiaTime.timeString}, ${indiaTime.dateString}, Time of Day in India="${indiaTime.timeOfDay}"]\nUser: ${userMessage}`,
-        },
-      ],
+      content: `[Context: User Name="${userName}", Current India Time (IST)=${indiaTime.timeString}, ${indiaTime.dateString}, Period="${indiaTime.timeOfDay}"]\nUser: ${userMessage}`,
     });
 
-    const response = await generateContentWithFallback({
-      contents,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        temperature: 0.8,
-      },
+    const groqReply = await generateGroqChatCompletion({
+      messages: groqMessages,
+      temperature: persona.humorLevel === 'high' ? 0.9 : 0.75,
+      max_tokens: 300,
     });
 
-    const replyText =
-      response.text?.trim() ||
-      `Hey ${userName} 🤗 I'm right here with you! Tell me what's on your mind? 💛✨`;
-
-    return {
-      reply: replyText,
-      crisisInfo: crisisCheck,
-    };
-  } catch (error) {
-    console.error('Error generating companion response with Gemini:', error);
-    
-    // Provide a short, friendly, emoji-rich fallback
-    let contextAwareFallback = `Hey ${userName} 🤗 I hear you and I'm right here with you this ${indiaTime.timeOfDay}. Take a gentle breath... how are you holding up right now? 💛✨`;
-    
-    if (crisisCheck.isCrisisDetected) {
-      contextAwareFallback = `I hear how tough things are right now, and I care about you deeply 🫂 Please reach out to kind, 24/7 counselors in India at Tele-MANAS (dial 14416 or 1800-891-4416) or Vandrevala Foundation (+91 9999 666 555). You don't have to carry this alone 💛`;
+    if (groqReply && groqReply.trim().length > 0) {
+      return {
+        reply: groqReply.trim(),
+        crisisInfo: crisisCheck,
+        engineUsed: 'groq',
+      };
     }
-
-    return {
-      reply: contextAwareFallback,
-      crisisInfo: crisisCheck,
-    };
+  } catch (groqErr) {
+    console.warn('Groq response not available or failed, falling back to Gemini:', groqErr);
   }
-}
 
+  // 2. FALLBACK PATH: Gemini AI
+  const ai = getAI();
+  if (ai) {
+    try {
+      const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
+      const recentHistory = history.slice(-8);
+      for (const item of recentHistory) {
+        contents.push({
+          role: item.role,
+          parts: [{ text: item.text }],
+        });
+      }
+
+      contents.push({
+        role: 'user',
+        parts: [
+          {
+            text: `[Context: User Name="${userName}", Current India Time (IST)=${indiaTime.timeString}, ${indiaTime.dateString}, Period="${indiaTime.timeOfDay}"]\nUser: ${userMessage}`,
+          },
+        ],
+      });
+
+      const response = await generateContentWithFallback({
+        contents,
+        config: {
+          systemInstruction,
+          temperature: 0.8,
+        },
+      });
+
+      const replyText =
+        response.text?.trim() ||
+        `Hey ${userName} 🤗 I'm right here with you! Tell me what's on your mind? 💛✨`;
+
+      return {
+        reply: replyText,
+        crisisInfo: crisisCheck,
+        engineUsed: 'gemini',
+      };
+    } catch (geminiErr) {
+      console.error('Gemini fallback failed:', geminiErr);
+    }
+  }
+
+  // 3. OFFLINE CONVERSATIONAL FALLBACK
+  let contextAwareFallback = `Hey ${userName} 🤗 I hear you and I'm right here with you this ${indiaTime.timeOfDay}! Take a gentle breath... how are you holding up right now? 💛✨`;
+  if (crisisCheck.isCrisisDetected) {
+    contextAwareFallback = `I hear how tough things are right now, and I care about you deeply 🫂 Please reach out to kind, 24/7 counselors in India at Tele-MANAS (dial 14416 or 1800-891-4416) or Vandrevala Foundation (+91 9999 666 555). You don't have to carry this alone 💛`;
+  }
+
+  return {
+    reply: contextAwareFallback,
+    crisisInfo: crisisCheck,
+    engineUsed: 'rule_fallback',
+  };
+}

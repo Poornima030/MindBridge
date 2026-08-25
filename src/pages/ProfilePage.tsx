@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   FileText,
   ExternalLink,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { getMoodEntries, getJournalEntries } from '../firebase/firestoreService.ts';
@@ -62,143 +63,109 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onOpenCrisisModal }) =
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-in fade-in duration-200">
       {/* Header */}
       <div>
-        <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 mb-1">
+        <div className="flex items-center gap-2 text-teal-600 mb-1">
           <User className="w-6 h-6" />
           <span className="text-xs font-bold uppercase tracking-wider">Account & Safety</span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-          Your Profile
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          Your Profile & Sanctuary
         </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+        <p className="text-sm text-slate-500 mt-1">
           Review your account details, privacy protection, and emergency safety guidelines.
         </p>
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
+      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs space-y-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-extrabold text-2xl shadow-md">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-teal-600 to-sky-600 text-white flex items-center justify-center font-extrabold text-2xl shadow-md">
             {userProfile?.name?.charAt(0).toUpperCase() ||
               currentUser?.email?.charAt(0).toUpperCase() ||
               'U'}
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+            <h2 className="text-xl font-bold text-slate-900">
               {userProfile?.name || 'Friend'}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-              <Mail className="w-3.5 h-3.5" />
+            <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+              <Mail className="w-3.5 h-3.5 text-teal-600" />
               {currentUser?.email}
             </p>
             <p className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5 text-teal-600" />
               Member since {memberSince}
             </p>
           </div>
         </div>
 
         {/* Account Info Details */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Firebase UID</span>
-            <span className="text-xs font-mono font-medium text-slate-800 dark:text-slate-200 truncate block mt-0.5">
-              {currentUser?.uid}
-            </span>
-          </div>
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Mood Logs</span>
-            <span className="text-base font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5">
-              {stats.moods}
-            </span>
+            <span className="text-lg font-extrabold text-slate-900">{stats.moods}</span>
           </div>
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">Journal Reflections</span>
-            <span className="text-base font-bold text-teal-600 dark:text-teal-400 block mt-0.5">
-              {stats.journals}
+            <span className="text-lg font-extrabold text-slate-900">{stats.journals}</span>
+          </div>
+          <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 col-span-2 sm:col-span-1">
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">AI System</span>
+            <span className="text-xs font-bold text-teal-600 flex items-center gap-1 mt-1">
+              <Sparkles className="w-3.5 h-3.5" /> Empathetic AI
             </span>
           </div>
         </div>
-      </div>
 
-      {/* Privacy & Security Card */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
-        <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
-          <Shield className="w-5 h-5 text-emerald-600" />
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            Privacy & Data Security Policy
-          </h2>
-        </div>
-        <div className="space-y-2.5 text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-          <div className="flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-            <span>
-              <strong>Private Data Isolation:</strong> Your mood entries, journal logs, and chat records are scoped strictly to your unique Firebase UID via Firestore security rules.
-            </span>
-          </div>
-          <div className="flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-            <span>
-              <strong>Secure Server Processing:</strong> Gemini AI queries and sentiment evaluations execute server-side; API keys are never exposed in browser code.
-            </span>
-          </div>
-          <div className="flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-            <span>
-              <strong>Non-Diagnostic Commitment:</strong> MindBridge is an emotional reflection companion and educational wellness platform, not a healthcare provider.
-            </span>
+        {/* Privacy & Security */}
+        <div className="space-y-3 pt-2 border-t border-slate-100">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <Shield className="w-4 h-4 text-teal-600" />
+            <span>Data Privacy & Security</span>
+          </h3>
+          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600 space-y-2 leading-relaxed">
+            <p className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>All mood entries, voice entries, and reflections are isolated to your authenticated user account.</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Conversations are secured with Cloud Firestore rules and private inference keys.</span>
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* Emergency Resources Quick Access */}
-      <div className="bg-rose-50/60 dark:bg-rose-950/30 rounded-2xl p-6 border border-rose-200 dark:border-rose-900/60 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300">
-            <PhoneCall className="w-5 h-5 text-rose-600" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-              Crisis Helplines & Immediate Resources
-            </h2>
+        {/* Emergency Helplines Quick Action */}
+        <div className="space-y-3 pt-2 border-t border-slate-100">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+            <PhoneCall className="w-4 h-4 text-rose-600" />
+            <span>Emergency Human Support</span>
+          </h3>
+          <div className="p-4 bg-rose-50 rounded-2xl border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-rose-700">
+            <div>
+              <p className="font-bold text-rose-900">24/7 Free Helplines in India</p>
+              <p className="text-[11px] text-slate-600 mt-0.5">
+                Tele-MANAS: 14416 • Vandrevala Foundation: +91 9999 666 555
+              </p>
+            </div>
+            <button
+              onClick={onOpenCrisisModal}
+              className="px-4 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-xs hover:bg-rose-700 transition-colors whitespace-nowrap"
+            >
+              Open Helpline Directory
+            </button>
           </div>
+        </div>
+
+        {/* Logout */}
+        <div className="pt-2 border-t border-slate-100">
           <button
-            onClick={onOpenCrisisModal}
-            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-xs"
+            onClick={handleLogout}
+            className="w-full py-2.5 px-4 bg-slate-50 border border-slate-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-600 rounded-2xl text-xs font-bold transition-colors flex items-center justify-center gap-2"
           >
-            Open 24/7 Directory
+            <LogOut className="w-4 h-4" />
+            <span>Sign Out of MindBridge</span>
           </button>
         </div>
-        <p className="text-xs text-rose-800 dark:text-rose-300 leading-relaxed">
-          If you are experiencing severe emotional pain or suicidal thoughts, help is free, confidential, and available 24/7:
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-rose-200/80 dark:border-rose-900/50">
-            <span className="font-bold text-slate-900 dark:text-slate-100 text-xs block">
-              988 Suicide & Crisis Lifeline
-            </span>
-            <span className="text-rose-600 dark:text-rose-400 font-mono text-xs font-bold block mt-1">
-              Call or Text 988 (US & Canada)
-            </span>
-          </div>
-          <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-rose-200/80 dark:border-rose-900/50">
-            <span className="font-bold text-slate-900 dark:text-slate-100 text-xs block">
-              Crisis Text Line
-            </span>
-            <span className="text-rose-600 dark:text-rose-400 font-mono text-xs font-bold block mt-1">
-              Text HOME to 741741
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Logout Action */}
-      <div className="pt-4 flex justify-end">
-        <button
-          id="profile-logout-btn"
-          onClick={handleLogout}
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 text-slate-700 hover:text-rose-700 dark:text-slate-300 dark:hover:text-rose-300 rounded-xl text-xs font-semibold transition-colors border border-slate-200 dark:border-slate-700"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Sign Out of MindBridge</span>
-        </button>
       </div>
     </div>
   );

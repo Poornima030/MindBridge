@@ -119,7 +119,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
   const neutralSentiments = sentiments.filter((s) => s.sentiment === 'Neutral').length;
   const negativeSentiments = sentiments.filter((s) => s.sentiment === 'Negative').length;
 
-  // Line Chart Data: Mood trajectory chronologically (oldest to newest, max last 15 logs)
+  // Line Chart Data: Mood trajectory chronologically
   const chronologicalMoods = [...moods]
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
     .slice(-15);
@@ -133,13 +133,13 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
     ),
     datasets: [
       {
-        label: 'Emotional Balance Score (1-5)',
+        label: 'Emotional Score (1-5)',
         data: chronologicalMoods.map((m) => MOOD_DEFINITIONS[m.mood]?.score || 3),
-        borderColor: '#059669',
-        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+        borderColor: '#0d9488', // teal-600
+        backgroundColor: 'rgba(13, 148, 136, 0.12)',
         fill: true,
         tension: 0.35,
-        pointBackgroundColor: '#047857',
+        pointBackgroundColor: '#0d9488',
         pointBorderColor: '#ffffff',
         pointHoverRadius: 6,
         pointRadius: 4,
@@ -171,16 +171,16 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
         ticks: {
           stepSize: 1,
           callback: (value: any) => {
-            if (value === 5) return '5 - Very Happy';
+            if (value === 5) return '5 - Joyful';
             if (value === 4) return '4 - Happy';
             if (value === 3) return '3 - Neutral';
-            if (value === 2) return '2 - Sad / Heavy';
-            if (value === 1) return '1 - Very Sad';
+            if (value === 2) return '2 - Low/Sad';
+            if (value === 1) return '1 - Heavy';
             return value;
           },
         },
         grid: {
-          color: 'rgba(148, 163, 184, 0.15)',
+          color: 'rgba(226, 232, 240, 0.8)',
         },
       },
       x: {
@@ -210,14 +210,14 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
         label: 'Check-in Count',
         data: moodTypes.map((m) => moodFrequency[m] || 0),
         backgroundColor: [
-          '#10B981',
-          '#059669',
-          '#64748B',
-          '#3B82F6',
-          '#1D4ED8',
-          '#F59E0B',
-          '#EF4444',
-          '#8B5CF6',
+          '#10b981', // emerald-500
+          '#0d9488', // teal-600
+          '#94a3b8', // slate-400
+          '#f43f5e', // rose-500
+          '#be123c', // rose-700
+          '#f59e0b', // amber-500
+          '#ef4444', // red-500
+          '#6366f1', // indigo-500
         ],
         borderRadius: 8,
       },
@@ -239,7 +239,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
           stepSize: 1,
         },
         grid: {
-          color: 'rgba(148, 163, 184, 0.15)',
+          color: 'rgba(226, 232, 240, 0.8)',
         },
       },
       x: {
@@ -256,7 +256,7 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
     datasets: [
       {
         data: [positiveSentiments, neutralSentiments, negativeSentiments],
-        backgroundColor: ['#10B981', '#94A3B8', '#F43F5E'],
+        backgroundColor: ['#10b981', '#cbd5e1', '#f43f5e'],
         hoverOffset: 4,
         borderWidth: 0,
       },
@@ -283,16 +283,16 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 mb-1">
-            <BarChart3 className="w-5 h-5 text-emerald-600" />
+          <div className="flex items-center gap-2 text-teal-600 mb-1">
+            <BarChart3 className="w-5 h-5 text-teal-600" />
             <span className="text-xs font-bold uppercase tracking-wider">
               Emotional Analytics & Insights
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Wellness Trends & Metrics
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Visualized patterns from your private mood check-ins and journal sentiment analyses.
           </p>
         </div>
@@ -300,22 +300,22 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
 
       {/* Bento Overview Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
+        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
           <span className="text-[11px] uppercase font-bold text-slate-400 block">
             Avg. Mood Score
           </span>
           <div className="flex items-baseline gap-2 mt-2">
-            <span className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
+            <span className="text-3xl font-extrabold text-teal-600">
               {averageScore}
             </span>
             <span className="text-xs font-normal text-slate-400">/ 5.0</span>
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
+          <span className="text-[11px] text-slate-500 block mt-1">
             Based on {totalMoodLogs} check-ins
           </span>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
+        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
           <span className="text-[11px] uppercase font-bold text-slate-400 block">
             Primary Emotional State
           </span>
@@ -323,68 +323,68 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
             <span className="text-2xl">
               {MOOD_DEFINITIONS[mostCommonMood as MoodType]?.emoji || '🌱'}
             </span>
-            <span className="text-xl font-extrabold text-slate-900 dark:text-slate-100 truncate">
+            <span className="text-xl font-extrabold text-slate-900 truncate">
               {mostCommonMood}
             </span>
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
+          <span className="text-[11px] text-slate-500 block mt-1">
             {highestCount} recorded entries
           </span>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
+        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
           <span className="text-[11px] uppercase font-bold text-slate-400 block">
             Journal Reflections
           </span>
-          <div className="text-3xl font-extrabold text-teal-600 dark:text-teal-400 mt-2">
+          <div className="text-3xl font-extrabold text-emerald-600 mt-2">
             {totalJournals}
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
+          <span className="text-[11px] text-slate-500 block mt-1">
             {sentiments.length} analyzed tones
           </span>
         </div>
 
-        <div className="p-5 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
+        <div className="p-5 rounded-3xl bg-white border border-slate-200 shadow-xs hover:shadow-md transition-shadow">
           <span className="text-[11px] uppercase font-bold text-slate-400 block">
             Positive Tone Ratio
           </span>
-          <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-2">
+          <div className="text-3xl font-extrabold text-teal-600 mt-2">
             {sentiments.length > 0
               ? `${Math.round((positiveSentiments / sentiments.length) * 100)}%`
               : 'N/A'}
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-1">
+          <span className="text-[11px] text-slate-500 block mt-1">
             {positiveSentiments} uplifting reflections
           </span>
         </div>
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-slate-400 text-sm bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+        <div className="p-12 text-center text-slate-400 text-sm bg-white rounded-3xl border border-slate-200">
           Aggregating your wellness analytics...
         </div>
       ) : totalMoodLogs === 0 && totalJournals === 0 ? (
         /* Empty State */
-        <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 space-y-4 max-w-lg mx-auto">
-          <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-950/60 rounded-3xl flex items-center justify-center text-emerald-600 mx-auto">
+        <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-slate-200 space-y-4 max-w-lg mx-auto">
+          <div className="w-14 h-14 bg-teal-50 rounded-3xl flex items-center justify-center text-teal-600 mx-auto border border-teal-100">
             <BarChart3 className="w-7 h-7" />
           </div>
-          <h3 className="text-lg font-extrabold text-slate-900 dark:text-slate-100">
+          <h3 className="text-lg font-extrabold text-slate-900">
             No Analytics Data Available Yet
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+          <p className="text-xs text-slate-500 leading-relaxed">
             Analytics are generated strictly from your real check-in entries. Once you log your mood or write your first journal entry, your personalized trajectory and distribution charts will appear here.
           </p>
           <div className="flex gap-3 justify-center pt-2">
             <button
               onClick={() => onNavigate('mood')}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl text-xs font-bold shadow-xs hover:bg-emerald-700 transition-colors"
+              className="px-4 py-2 bg-teal-600 text-white rounded-2xl text-xs font-bold shadow-xs hover:bg-teal-700 transition-colors"
             >
               Log First Mood
             </button>
             <button
               onClick={() => onNavigate('journal')}
-              className="px-4 py-2 bg-teal-600 text-white rounded-2xl text-xs font-bold shadow-xs hover:bg-teal-700 transition-colors"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-2xl text-xs font-bold shadow-xs hover:bg-emerald-700 transition-colors"
             >
               Write First Journal
             </button>
@@ -394,13 +394,13 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
         /* Charts Grid */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Mood Trajectory Line Chart */}
-          <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100">
                   <TrendingUp className="w-4 h-4" />
                 </div>
-                <h2 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+                <h2 className="font-bold text-slate-900 text-sm sm:text-base">
                   Mood Trajectory Over Time
                 </h2>
               </div>
@@ -419,12 +419,12 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
           </div>
 
           {/* Sentiment Doughnut Chart */}
-          <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <div className="lg:col-span-4 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100">
                 <Sparkles className="w-4 h-4" />
               </div>
-              <h2 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+              <h2 className="font-bold text-slate-900 text-sm sm:text-base">
                 Journal Tone Breakdown
               </h2>
             </div>
@@ -441,13 +441,13 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
           </div>
 
           {/* Mood Frequency Distribution Bar Chart */}
-          <div className="lg:col-span-12 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+          <div className="lg:col-span-12 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100">
                   <Smile className="w-4 h-4" />
                 </div>
-                <h2 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
+                <h2 className="font-bold text-slate-900 text-sm sm:text-base">
                   Mood Frequency Distribution
                 </h2>
               </div>
@@ -468,8 +468,8 @@ export const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ onNavigate }) => {
       )}
 
       {/* Non-diagnostic notice */}
-      <div className="p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 flex items-start gap-2.5">
-        <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+      <div className="p-4 rounded-3xl bg-white border border-slate-200 text-xs text-slate-500 flex items-start gap-2.5">
+        <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
         <span>
           <strong>Analytics Guidance:</strong> Numerical mood mappings and sentiment scores are designed for personal self-reflection and habit awareness. They do not constitute clinical psychological assessments or medical measurements.
         </span>

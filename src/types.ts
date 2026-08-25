@@ -111,11 +111,38 @@ export const MOOD_DEFINITIONS: Record<MoodType, MoodConfig> = {
   },
 };
 
+export interface BotPersonaConfig {
+  botName: string;
+  humorLevel: 'none' | 'subtle' | 'high';
+  communicationStyle: 'bestie' | 'listener' | 'mentor' | 'direct';
+  adviceMode: 'listen' | 'balanced' | 'action';
+  emojiLevel: 'minimal' | 'moderate' | 'expressive';
+}
+
+export const DEFAULT_BOT_PERSONA: BotPersonaConfig = {
+  botName: 'MindBridge Buddy',
+  humorLevel: 'subtle',
+  communicationStyle: 'bestie',
+  adviceMode: 'balanced',
+  emojiLevel: 'expressive',
+};
+
+export interface UserEmotionalContext {
+  recentMoods?: Array<{ mood: string; note?: string; created_at: string }>;
+  recentJournals?: Array<{ snippet: string; created_at: string; sentiment?: string; emotions?: string[] }>;
+  moodSummary?: {
+    dominantMood?: string;
+    averageScore?: number;
+    totalLogs?: number;
+  };
+}
+
 export interface UserProfile {
   user_id: string;
   name: string;
   email: string;
   created_at: string;
+  persona_settings?: BotPersonaConfig;
 }
 
 export interface MoodEntry {
@@ -127,12 +154,23 @@ export interface MoodEntry {
   created_at: string;
 }
 
+export interface JournalAudioAnalysis {
+  transcriptSummary?: string;
+  emotionalTone?: string;
+  detectedThemes?: string[];
+  comfortNote?: string;
+}
+
 export interface JournalEntry {
   id?: string;
   journal_id: string;
   user_id: string;
   content: string;
   created_at: string;
+  entry_type?: 'text' | 'voice' | 'hybrid';
+  audio_url?: string;
+  audio_duration?: number;
+  audio_analysis?: JournalAudioAnalysis;
 }
 
 export interface SentimentAnalysis {

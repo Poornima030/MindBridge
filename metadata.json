@@ -1,7 +1,8 @@
 {
   "name": "MindBridge – AI Mental Wellness Companion",
-  "description": "Full-stack AI-powered emotional wellness companion with mood tracking, private journaling, sentiment analysis, empathetic Gemini chat, and Chart.js analytics.",
-  "requestFramePermissions": [],
+  "description": "Full-stack AI-powered emotional wellness companion with mood tracking, voice & text journaling, sentiment analysis, personalized empathetic AI chat, and Chart.js analytics.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
-

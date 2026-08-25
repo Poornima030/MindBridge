@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -6,6 +7,7 @@ import { generateCompanionResponse } from './server/geminiChatService.ts';
 import { analyzeJournalSentiment } from './server/sentimentService.ts';
 import { generatePersonalizedRecommendations } from './server/recommendationService.ts';
 import { analyzeCrisisIndicators, CRISIS_RESOURCES } from './server/crisisService.ts';
+import { analyzeVoiceJournalAudio } from './server/voiceService.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,8 +16,9 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Body parser middleware
-  app.use(express.json());
+  // Body parser middleware with generous limits for audio recordings
+  app.use(express.json({ limit: '25mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
   // Health check endpoint
   app.get('/api/health', (_req, res) => {
@@ -24,13 +27,14 @@ async function startServer() {
       service: 'MindBridge Mental Wellness API',
       timestamp: new Date().toISOString(),
       geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
+      groqConfigured: true,
     });
   });
 
   // Chat API endpoint
   app.post('/api/chat', async (req, res) => {
     try {
-      const { message, history, userName } = req.body;
+      const { message, history, userName, persona, userContext } = req.body;
 
       if (!message || typeof message !== 'string' || message.trim() === '') {
         return res.status(400).json({ error: 'Message is required and must be a non-empty string.' });
@@ -39,7 +43,9 @@ async function startServer() {
       const response = await generateCompanionResponse(
         message.trim(),
         Array.isArray(history) ? history : [],
-        userName || 'Friend'
+        userName || 'Friend',
+        persona || {},
+        userContext
       );
 
       res.json(response);
@@ -67,6 +73,28 @@ async function startServer() {
       console.error('Error in /api/sentiment endpoint:', error);
       res.status(500).json({
         error: 'Failed to analyze sentiment',
+        details: error instanceof Error ? error.message : 'Unknown server error',
+      });
+    }
+  });
+
+  // Voice Journal Audio understanding endpoint (Groq / Multimodal AI)
+  app.post('/api/voice-understand', async (req, res) => {
+    try {
+      const { audioBase64, mimeType, durationSeconds, spokenContextHint } = req.body;
+
+      const result = await analyzeVoiceJournalAudio({
+        audioBase64,
+        mimeType,
+        durationSeconds,
+        spokenContextHint,
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error('Error in /api/voice-understand endpoint:', error);
+      res.status(500).json({
+        error: 'Failed to understand voice recording',
         details: error instanceof Error ? error.message : 'Unknown server error',
       });
     }

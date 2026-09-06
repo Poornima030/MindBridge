@@ -27,7 +27,7 @@ async function startServer() {
       service: 'MindBridge Mental Wellness API',
       timestamp: new Date().toISOString(),
       geminiConfigured: Boolean(process.env.GEMINI_API_KEY),
-      groqConfigured: true,
+      groqConfigured: Boolean(process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'MY_GROQ_API_KEY'),
     });
   });
 

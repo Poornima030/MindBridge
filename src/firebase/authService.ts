@@ -5,6 +5,9 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { auth } from './config.ts';
 import { createUserProfile, getUserProfile } from './firestoreService.ts';
@@ -30,6 +33,26 @@ export async function registerUser(
 export async function loginUser(email: string, password: string): Promise<FirebaseUser> {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
   return userCredential.user;
+}
+
+export async function loginWithGoogle(): Promise<{ user: FirebaseUser; profile: UserProfile }> {
+  const provider = new GoogleAuthProvider();
+  const userCredential = await signInWithPopup(auth, provider);
+  const user = userCredential.user;
+
+  let profile = await getUserProfile(user.uid);
+  if (!profile) {
+    profile = await createUserProfile(
+      user.uid,
+      user.displayName || 'Friend',
+      user.email || ''
+    );
+  }
+  return { user, profile };
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+  await sendPasswordResetEmail(auth, email);
 }
 
 export async function logoutUser(): Promise<void> {

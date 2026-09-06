@@ -22,8 +22,9 @@ export function getAI(): GoogleGenAI | null {
 
 // Ordered list of active production models based on @google/genai guidelines
 const FALLBACK_MODELS = [
+  'gemini-3.8-flash',
   'gemini-3.1-flash-lite',
-  'gemini-3.7-flash',
+  'gemini-flash-latest',
 ];
 
 async function sleep(ms: number) {

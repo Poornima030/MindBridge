@@ -3,6 +3,8 @@ import { User as FirebaseUser } from 'firebase/auth';
 import {
   registerUser,
   loginUser,
+  loginWithGoogle as loginWithGoogleService,
+  sendPasswordReset,
   logoutUser,
   onAuthChange,
   getUserProfile,
@@ -15,6 +17,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, pass: string) => Promise<void>;
   register: (name: string, email: string, pass: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -70,6 +74,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserProfile(profile);
   };
 
+  const loginWithGoogle = async () => {
+    const { user, profile } = await loginWithGoogleService();
+    setCurrentUser(user);
+    setUserProfile(profile);
+  };
+
+  const resetPassword = async (email: string) => {
+    await sendPasswordReset(email);
+  };
+
   const logout = async () => {
     await logoutUser();
     setCurrentUser(null);
@@ -90,6 +104,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         login,
         register,
+        loginWithGoogle,
+        resetPassword,
         logout,
         refreshProfile,
       }}

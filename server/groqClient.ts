@@ -2,11 +2,8 @@ import Groq from 'groq-sdk';
 
 let groqInstance: Groq | null = null;
 
-// User provided Groq key with fallback to ensure instant high-speed inference
-const DEFAULT_GROQ_KEY = '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';
-
 export function getGroqClient(): Groq | null {
-  const apiKey = process.env.GROQ_API_KEY || DEFAULT_GROQ_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey || apiKey === 'MY_GROQ_API_KEY' || apiKey.trim() === '') {
     return null;
   }
@@ -14,19 +11,17 @@ export function getGroqClient(): Groq | null {
   if (!groqInstance) {
     try {
       groqInstance = new Groq({ apiKey: apiKey.trim() });
-    } catch (err) {
-      console.warn('Failed to initialize Groq client:', err);
+    } catch {
       return null;
     }
   }
   return groqInstance;
 }
 
-// Recommended fast models in order of preference
+// Active supported Groq models (mixtral-8x7b-32768 is decommissioned)
 export const GROQ_MODELS = [
   'llama-3.3-70b-versatile',
   'llama-3.1-8b-instant',
-  'mixtral-8x7b-32768',
 ];
 
 export async function generateGroqChatCompletion(params: {
@@ -52,9 +47,8 @@ export async function generateGroqChatCompletion(params: {
       if (reply) {
         return reply.trim();
       }
-    } catch (err: any) {
-      console.warn(`Groq model ${model} attempt failed:`, err?.message || err);
-      // Try next model
+    } catch {
+      // Continue to next model or fallback
     }
   }
   return null;
